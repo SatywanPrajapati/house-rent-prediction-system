@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Basic page metadata and shared stylesheet -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Rent Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <!-- Shared site header -->
+    {% include 'header.html' %}
+
+    <main class="page-shell">
+        <div class="card form-card">
+            <!-- Main prediction form -->
+            <form id="predictionForm" class="form-page" novalidate>
+                <h2 class="form-title">
+                    <span class="form-title-icon" aria-hidden="true">&#127960;</span>
+                    House Rent Prediction
+                </h2>
+
+                <div class="field field-floating">
+                    <label for="area">Area (Sqft)</label>
+                    <input type="number" id="area" placeholder="Enter Size" min="1" required>
+                </div>
+
+                <div class="field field-floating">
+                    <label for="beds">Bedroom (BHK)</label>
+                    <input type="number" id="beds" placeholder="Enter No. of Bedroom" min="1" required>
+                </div>
+
+                <div class="field field-floating">
+                    <label for="bathrooms">Bathrooms</label>
+                    <input type="number" id="bathrooms" placeholder="Enter No. of Bathrooms" min="1" required>
+                </div>
+
+                <div class="field field-floating">
+                    <label for="balconies">Balconies</label>
+                    <input type="number" id="balconies" placeholder="Enter No. of Balconies" min="0" required>
+                </div>
+
+                <div class="field select-field select-field-city">
+                    <select id="city" required>
+                        <option value="">Select City</option>
+                        {% for city in cities %}
+                        <option value="{{ city }}">{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field select-field select-field-locality">
+                    <select id="locality" required>
+                        <option value="">Select Locality</option>
+                    </select>
+                </div>
+
+                <div class="field select-field select-field-furnishing">
+                    <select id="furnishing" required>
+                        <option value="">Select Furnishing</option>
+                        {% for furnishing in furnishings %}
+                        <option value="{{ furnishing }}">{{ furnishing }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" id="predictBtn">Predict Rent</button>
+                <p id="formError" class="error-message" hidden></p>
+            </form>
+        </div>
+    </main>
+
+    <!-- Shared site footer -->
+    {% include 'footer.html' %}
+
+    <!-- City-locality mapping used by JavaScript for dynamic locality loading -->
+    <script id="city-locality-data" type="application/json">{{ city_locality_map | tojson }}</script>
+    <!-- Frontend interaction logic -->
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

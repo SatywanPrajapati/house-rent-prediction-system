@@ -1,0 +1,248 @@
+/* Global page layout */
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #0f4c81, #20b486);
+    color: #1f2937;
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Center the main card on the page */
+
+.page-shell {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+
+/* Header styles */
+
+.main-header {
+    padding: 20px 16px;
+    text-align: center;
+    color: #ffffff;
+}
+
+.header-content {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.header-title {
+    margin: 0;
+}
+
+.header-subtitle {
+    margin: 8px 0 0;
+}
+
+
+/* Card and form styles */
+
+.card {
+    width: min(100%, 500px);
+    margin-top: -20px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #ffffff;
+    padding: 20px 38px 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 45px rgba(18, 17, 17, 0.22);
+    transform: scale(0.9);
+}
+
+.form-card {
+    border-top: 3px solid #000000;
+}
+
+.form-title {
+    margin: 0 0 28px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #101828;
+}
+
+.form-title-icon {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 24px;
+    vertical-align: -2px;
+}
+
+.field {
+    margin-bottom: 18px;
+}
+
+.field-floating {
+    position: relative;
+}
+
+.field-floating label {
+    position: absolute;
+    top: -9px;
+    left: 14px;
+    padding: 0 8px;
+    background: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    color: #111827;
+}
+
+.field-floating input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 18px 14px 12px;
+    border-radius: 12px;
+    border: 2px solid #0047f9;
+    font-size: 15px;
+    color: #111827;
+}
+
+.field-floating input::placeholder {
+    color: #6b7280;
+}
+
+.field-floating input:focus {
+    outline: none;
+    border-color: #099d7a;
+    box-shadow: 0 0 0 3px rgba(90, 180, 255, 0.18);
+}
+
+.select-field select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 15px 44px 15px 16px;
+    border-radius: 14px;
+    background: #ffffff;
+    font-size: 15px;
+    color: #111827;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, #111827 50%), linear-gradient(135deg, #111827 50%, transparent 50%);
+    background-position: calc(100% - 20px) calc(50% - 3px), calc(100% - 14px) calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+}
+
+.select-field-city select {
+    border: 2px solid #111111;
+}
+
+.select-field-locality select,
+.select-field-furnishing select {
+    border: 1.8px solid #6d4bff;
+}
+
+.select-field select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(109, 75, 255, 0.14);
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(90deg, #5f7ce8, #7d4cb3);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 14px 24px rgba(95, 124, 232, 0.26);
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px rgba(95, 124, 232, 0.32);
+}
+
+button:disabled {
+    opacity: 0.75;
+    cursor: wait;
+}
+
+
+/* Result page styles */
+
+.result-card {
+    text-align: center;
+}
+
+.price {
+    font-size: 34px;
+    color: #0f766e;
+    margin: 12px 0;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+.priceCompare {
+    font-weight: 600;
+}
+
+.map-frame {
+    border: 0;
+    border-radius: 12px;
+    margin: 16px 0;
+}
+
+
+/* Form feedback */
+
+.error-message {
+    margin-top: 12px;
+    color: #b91c1c;
+    font-size: 14px;
+    text-align: center;
+}
+
+
+/* Footer styles */
+
+.main-footer {
+    padding: 20px 16px;
+    text-align: center;
+    color: #ffffff;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.social-icons img {
+    width: 28px;
+    height: 28px;
+}
+
+.footer-text {
+    margin: 0;
+}
+
+.main-footer a {
+    color: #ffffff;
+}
+
+
+/* Keep spacing comfortable on smaller screens */
+
+@media (max-width: 600px) {
+    .page-shell {
+        padding: 16px;
+    }
+    .card {
+        padding: 28px 22px 30px;
+    }
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Basic page metadata and shared stylesheet -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <!-- Shared site header -->
+    {% include 'header.html' %}
+
+    <main class="page-shell">
+        <div class="card result-card">
+            <!-- Final rent prediction summary -->
+            <h2>Estimated House Rent</h2>
+            <h1 class="price">&#8377; {{ prediction }}</h1>
+
+            <p>
+                {{ beds }} BHK | {{ bathrooms }} Bath | {{ balconies }} Balcony | {{ area }} Sqft | {{ furnishing }}
+            </p>
+
+            <p>
+                Estimated monthly rent in {{ city }}, {{ locality }}
+            </p>
+
+            {% if city_avg %}
+            <p class="priceCompare">
+                {{ benchmark_label or "City Average" }}: &#8377; {{ city_avg }} | Price Level: {{ price_level }}
+            </p>
+            {% endif %}
+
+            <!-- Embedded location preview for the selected locality -->
+            <iframe width="100%" height="250" class="map-frame" loading="lazy" allowfullscreen src="https://www.google.com/maps?q={{ locality }} {{ city }}&output=embed">
+            </iframe>
+
+            <button type="button" id="backToHomeBtn">Predict Again</button>
+        </div>
+    </main>
+
+    <!-- Shared site footer -->
+    {% include 'footer.html' %}
+
+    <!-- Frontend interaction logic -->
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>
