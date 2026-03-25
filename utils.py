@@ -1,88 +1,68 @@
 import pickle
 import numpy as np
-import pandas as pd
-import os
 
-# =========================
-# PATH SETUP
-# =========================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# ==============================
+# LOAD FILES
+# ==============================
+model = pickle.load(open("model/house_model.pkl", "rb"))
+encoders = pickle.load(open("model/encoders.pkl", "rb"))
 
-# Load model files once so each prediction request stays lightweight.
-model = pickle.load(open(os.path.join(BASE_DIR, "model/house_model.pkl"), "rb"))
-city_mean = pickle.load(open(os.path.join(BASE_DIR, "model/city_mean.pkl"), "rb"))
-locality_mean = pickle.load(open(os.path.join(BASE_DIR, "model/locality_mean.pkl"), "rb"))
+locality_mean = pickle.load(open("model/locality_mean.pkl", "rb"))
+city_mean = pickle.load(open("model/city_mean.pkl", "rb"))
 
-# =========================
-# ENCODING MAP
-# =========================
-FURNISHING_MAP = {
-    "Unfurnished": 0,
-    "Semi-Furnished": 1,
-    "Furnished": 2
-}
+# ==============================
+# DEFAULT VALUES (FIXED)
+# ==============================
+DEFAULT_LOCALITY = np.mean(locality_mean)
+DEFAULT_CITY = np.mean(city_mean)
 
-# =========================
-# FEATURE PREPARATION
-# =========================
-def prepare_features(data):
-    # Convert raw input into the numeric values expected by the model.
-    area = float(data["area"])
-    beds = int(data["beds"])
-    bathrooms = float(data["bathrooms"])
-    balconies = float(data["balconies"])
+# ==============================
+# SAFE ENCODER
+# ==============================
+def safe_encode(le, value):
+    try:
+        if value in le.classes_:
+            return le.transform([value])[0]
+        else:
+            return 0
+    except:
+        return 0
 
-    city = data["city"]
-    locality = data["locality"]
-    furnishing = data["furnishing"]
+# ==============================
+# PREDICT FUNCTION
+# ==============================
+def predict_rent(data):
 
-    # Recreate the engineered features used while training the model.
-    area_per_bed = area / (beds + 1)
-    bath_per_bed = bathrooms / (beds + 1)
-    total_rooms = beds + bathrooms
-    beds_area = beds * area
+    # Feature Engineering
+    total_rooms = data["beds"] + data["bathrooms"]
+    area_log = np.log1p(data["area"])
 
-    # Encode text fields into numeric values using precomputed averages.
-    city_encoded = float(city_mean.get(city, city_mean.mean()))
-    locality_encoded = float(locality_mean.get(locality, city_encoded))
+    # Target Encoding
+    locality_encoded = locality_mean.get(data["locality"], DEFAULT_LOCALITY)
+    city_encoded = city_mean.get(data["city"], DEFAULT_CITY)
 
-    furnishing_encoded = FURNISHING_MAP.get(furnishing, 1)
+    # Safe Encoding
+    furnishing = safe_encode(encoders["furnishing"], data["furnishing"])
+    house_type = safe_encode(encoders["house_type"], data["house_type"])
 
-    features = pd.DataFrame([{
-        "area": area,
-        "beds": beds,
-        "bathrooms": bathrooms,
-        "balconies": balconies,
-        "area_per_bed": area_per_bed,
-        "bath_per_bed": bath_per_bed,
-        "total_rooms": total_rooms,
-        "beds_area": beds_area,
-        "locality_encoded": locality_encoded,
-        "city_encoded": city_encoded,
-        "furnishing_encoded": furnishing_encoded
-    }])
+    # Feature Order (IMPORTANT)
+    features = np.array([
+        data["beds"],
+        data["bathrooms"],
+        data["balconies"],
+        furnishing,
+        house_type,
+        total_rooms,
+        area_log,
+        locality_encoded,
+        city_encoded
+    ]).reshape(1, -1)
 
-    return features
+    # Prediction
+    log_prediction = model.predict(features)[0]
+    final_prediction = np.expm1(log_prediction)
 
-# =========================
-# PREDICTION
-# =========================
-def predict_price(data):
-    # Build the final feature frame for prediction.
-    features = prepare_features(data)
+    return round(final_prediction, 2)
 
-    pred_log = model.predict(features)
 
-    # Convert the prediction back from log scale to the original rent scale.
-    price = float(np.expm1(pred_log[0]))
-
-    # Apply the same rent adjustment logic used in this project.
-    beds = int(data["beds"])
-    if beds == 2:
-        price *= 0.95
-    elif beds == 3:
-        price *= 1.05
-    elif beds >= 4:
-        price *= 1.15
-
-    return int(price)
+print("✅ Model loaded successfully")
