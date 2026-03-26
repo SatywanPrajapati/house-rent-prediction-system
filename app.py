@@ -5,9 +5,8 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# ==============================
 # LOAD DATA
-# ==============================
+
 df = pd.read_csv("datasets/fullcleaned_house_data.csv")
 
 cities = sorted(df["city"].dropna().unique())
@@ -20,11 +19,12 @@ for city in cities:
         df[df["city"] == city]["locality"].dropna().unique()
     )
 
-city_mean = pickle.load(open("model/city_mean.pkl", "rb"))
+# NEW: City + BHK MEDIAN
+city_bhk_median = df.groupby(['city', 'beds'])['rent'].median().to_dict()
 
-# ==============================
+
 # HOME PAGE
-# ==============================
+
 @app.route("/")
 def home():
     return render_template(
@@ -34,16 +34,15 @@ def home():
         city_locality_map=city_locality_map
     )
 
-# ==============================
 # RESULT PAGE
-# ==============================
+
 @app.route("/result")
 def result():
     return render_template("result.html")
 
-# ==============================
+
 # PREDICT API
-# ==============================
+
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
@@ -60,41 +59,58 @@ def predict():
             "furnishing": data["furnishing"],
             "city": data["city"],
             "locality": data["locality"],
-
-            # FIXED
             "house_type": f'{int(data["beds"])} BHK Flat'
         }
 
-        # Validation
         if (
             input_data["area"] <= 0 or
             input_data["beds"] <= 0 or
             input_data["bathrooms"] <= 0 or
             input_data["balconies"] < 0
         ):
-            return jsonify({"success": False, "error": "Invalid values"}), 400
+            return jsonify({"success": False, "error": "Please enter valid numeric values."}), 400
 
+        # Prediction
         prediction = predict_rent(input_data)
+        predicted_rent = int(round(prediction))
 
-        city_avg = city_mean.get(input_data["city"], None)
+        city = input_data["city"]
+        beds = input_data["beds"]
 
-        if city_avg:
-            if prediction > city_avg:
-                price_level = "Above Average"
-            elif prediction < city_avg:
-                price_level = "Below Average"
-            else:
-                price_level = "Average"
+        #  MEDIAN RENT
+        median_rent = city_bhk_median.get((city, beds), None)
+
+        # fallback (important)
+        if median_rent is None:
+            median_rent = int(df["rent"].median())
         else:
-            price_level = None
+            median_rent = int(median_rent)
+
+        # % DIFFERENCE
+        percent_diff = ((predicted_rent - median_rent) / median_rent) * 100
+        percent_diff = round(percent_diff, 1)
+
+        #  PRICE LEVEL
+        if percent_diff < -15:
+            price_level = "Cheap"
+        elif percent_diff <= 15:
+            price_level = "Moderate"
+        else:
+            price_level = "Expensive"
 
         return jsonify({
             "success": True,
-            "prediction": round(prediction),
-            "city": input_data["city"],
+            "rent": predicted_rent,
+            "median_rent": median_rent,
+            "percent_diff": percent_diff,
+            "price_level": price_level,
+            "city": city,
             "locality": input_data["locality"],
-            "city_avg": round(city_avg) if city_avg else None,
-            "price_level": price_level
+            "beds": beds,
+            "bathrooms": input_data["bathrooms"],
+            "balconies": input_data["balconies"],
+            "area": input_data["area"],
+            "furnishing": input_data["furnishing"]
         })
 
     except Exception as e:
@@ -104,8 +120,7 @@ def predict():
         }), 400
 
 
-# ==============================
 # RUN
-# ==============================
+
 if __name__ == "__main__":
     app.run(debug=True)

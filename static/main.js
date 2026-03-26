@@ -5,9 +5,10 @@ const predictButton = document.getElementById("predictBtn");
 const backToHomeButton = document.getElementById("backToHomeBtn");
 const formError = document.getElementById("formError");
 const cityLocalityData = document.getElementById("city-locality-data");
+
 let cityLocalityMap = {};
 
-// Read the city-locality mapping injected by Flask into the page.
+// LOAD CITY-LOCALITY DATA
 if (cityLocalityData) {
     try {
         cityLocalityMap = JSON.parse(cityLocalityData.textContent);
@@ -16,36 +17,34 @@ if (cityLocalityData) {
     }
 }
 
-function showError(message) {
-    // Show a friendly error below the form button.
-    if (!formError) {
-        return;
-    }
 
+// ERROR HANDLING
+
+function showError(message) {
+    if (!formError) return;
     formError.textContent = message;
     formError.hidden = false;
 }
 
 function clearError() {
-    // Clear the previous error before a new action starts.
-    if (!formError) {
-        return;
-    }
-
+    if (!formError) return;
     formError.textContent = "";
     formError.hidden = true;
 }
+
+
+// HELPER
 
 function getFieldValue(id) {
     const field = document.getElementById(id);
     return field ? field.value.trim() : "";
 }
 
+
+// LOCALITY POPULATION
+
 function populateLocalities() {
-    // Rebuild the locality dropdown based on the chosen city.
-    if (!citySelect || !localitySelect) {
-        return;
-    }
+    if (!citySelect || !localitySelect) return;
 
     const selectedCity = citySelect.value;
     localitySelect.innerHTML = "<option value=''>Select locality</option>";
@@ -58,18 +57,20 @@ function populateLocalities() {
     });
 }
 
+
+// BUTTON LOADING STATE
+
 function setLoadingState(isLoading) {
-    // Update the button so the user knows prediction is running.
-    if (!predictButton) {
-        return;
-    }
+    if (!predictButton) return;
 
     predictButton.textContent = isLoading ? "Predicting..." : "Predict Rent";
     predictButton.disabled = isLoading;
 }
 
+
+// MAIN PREDICTION FUNCTION
+
 async function predictRent() {
-    // Validate the form, request a prediction, then open the result page.
     clearError();
     setLoadingState(true);
 
@@ -83,6 +84,7 @@ async function predictRent() {
         furnishing: getFieldValue("furnishing"),
     };
 
+    // VALIDATION
     const hasEmptyField = Object.values(payload).some((value) => value === "");
     if (hasEmptyField) {
         showError("Please fill in all fields before predicting.");
@@ -96,6 +98,10 @@ async function predictRent() {
     payload.balconies = Number(payload.balconies);
 
     const hasInvalidNumber =
+        Number.isNaN(payload.area) ||
+        Number.isNaN(payload.beds) ||
+        Number.isNaN(payload.bathrooms) ||
+        Number.isNaN(payload.balconies) ||
         payload.area <= 0 ||
         payload.beds <= 0 ||
         payload.bathrooms <= 0 ||
@@ -108,7 +114,9 @@ async function predictRent() {
     }
 
     try {
-        // Send the property details to the backend prediction API.
+
+        // API CALL
+
         const response = await fetch("/predict", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -116,13 +124,20 @@ async function predictRent() {
         });
 
         const data = await response.json();
+
         if (!response.ok || !data.success) {
             throw new Error(data.error || "Prediction failed");
         }
 
-        // Pass the values to the result page through the query string.
+
+        // PASS DATA TO RESULT PAGE
+
         const resultParams = new URLSearchParams({
-            prediction: String(data.prediction),
+            rent: String(data.rent),
+            median_rent: String(data.median_rent),
+            percent_diff: String(data.percent_diff),
+            price_level: data.price_level,
+
             area: String(payload.area),
             beds: String(payload.beds),
             bathrooms: String(payload.bathrooms),
@@ -140,13 +155,13 @@ async function predictRent() {
     }
 }
 
+// EVENTS
+
 if (citySelect) {
-    // Load locality options whenever the city changes.
     citySelect.addEventListener("change", populateLocalities);
 }
 
 if (predictionForm) {
-    // Use the form submit event so the button and Enter key both work reliably.
     predictionForm.addEventListener("submit", (event) => {
         event.preventDefault();
         predictRent();
@@ -154,7 +169,6 @@ if (predictionForm) {
 }
 
 if (backToHomeButton) {
-    // Keep result-page navigation logic inside JavaScript instead of inline HTML.
     backToHomeButton.addEventListener("click", () => {
         window.location.href = "/";
     });

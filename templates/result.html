@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prediction Result</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 </head>
 
 <body>
@@ -14,26 +15,44 @@
 
     <main class="page-shell">
         <div class="card result-card">
+            <h2 class="result-title">Estimated House Rent</h2>
+            <h1 class="price" id="price">₹ --</h1>
 
-            <h2>Estimated House Rent</h2>
-            <h1 class="price">₹ --</h1>
+            <p id="details" class="result-details"></p>
+            <p class="result-location-summary">
+                Estimated Monthly Rent in <span id="cityHighlight"></span>, <span id="locationHighlight"></span>
+            </p>
 
-            <p id="details"></p>
-            <p id="locationText"></p>
+            <div class="result-insights">
+                <p id="benchmark" class="result-benchmark"></p>
+                <p class="result-meta-line">
+                    <span id="percentDiff" class="result-diff"></span>
+                    <span class="result-divider">|</span>
+                    <span class="result-level-wrap">Price Level: <span id="priceLevel"></span></span>
+                </p>
+            </div>
 
-            <iframe id="mapFrame" width="100%" height="250" class="map-frame"></iframe>
-
+            <div class="map-shell">
+                <a id="openMapLink" class="map-open-link" target="_blank" rel="noopener noreferrer">View in Google Maps</a>
+                <div id="mapFrame" class="map-frame" aria-label="Property location map"></div>
+                <p id="mapStatus" class="map-status"></p>
+            </div>
             <button type="button" id="backToHomeBtn">Predict Again</button>
-
         </div>
     </main>
 
     {% include 'footer.html' %}
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         const params = new URLSearchParams(window.location.search);
 
-        const prediction = params.get("prediction");
+        // NEW PARAMS
+        const rent = params.get("rent");
+        const median_rent = params.get("median_rent");
+        const percent_diff = params.get("percent_diff");
+        const price_level = params.get("price_level");
+
         const area = params.get("area");
         const beds = params.get("beds");
         const bathrooms = params.get("bathrooms");
@@ -41,21 +60,97 @@
         const city = params.get("city");
         const locality = params.get("locality");
         const furnishing = params.get("furnishing");
+        const formattedRent = Number(rent || 0).toLocaleString("en-IN");
+        const formattedMedianRent = Number(median_rent || 0).toLocaleString("en-IN");
 
-        // Set price
-        document.querySelector(".price").innerText = "₹ " + prediction;
 
-        // Set details
+        // PRICE
+
+        document.getElementById("price").innerText = `₹ ${formattedRent}`;
+
+
+        // DETAILS
+
         document.getElementById("details").innerText =
-            `${beds} BHK | ${bathrooms} Bath | ${balconies} Balcony | ${area} Sqft | ${furnishing}`;
+            `${beds} BHK • ${bathrooms} Bath • ${balconies} Balcony • ${area} sqft • ${furnishing}`;
 
-        // Set location
-        document.getElementById("locationText").innerText =
-            `Estimated monthly rent in ${city}, ${locality}`;
 
-        // Set map
-        document.getElementById("mapFrame").src =
-            `https://www.google.com/maps?q=${locality} ${city}&output=embed`;
+        // BENCHMARK
+
+        const diffText = percent_diff > 0 ?
+            `+${percent_diff}% higher than average` :
+            `${percent_diff}% lower than average`;
+
+        document.getElementById("benchmark").innerText =
+            `• ${city} Median Rent (${beds} BHK): ₹${formattedMedianRent}`;
+        document.getElementById("percentDiff").innerText = diffText;
+
+
+        // PRICE LEVEL
+
+        let levelText = price_level;
+
+        if (price_level === "Cheap") levelText += " 🟢";
+        else if (price_level === "Moderate") levelText += " 🟡";
+        else levelText += " 🔴";
+
+        document.getElementById("priceLevel").innerText = levelText;
+
+
+        // LOCATION
+
+        document.getElementById("cityHighlight").innerText = city;
+        document.getElementById("locationHighlight").innerText = locality;
+
+
+        // MAP
+
+        const mapSearchText = `${locality}, ${city}`;
+        const exactLocationQuery = `${locality}, ${city}, India`;
+        document.getElementById("openMapLink").href =
+            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(exactLocationQuery)}`;
+
+        async function searchLocation(queryText) {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=1&q=${encodeURIComponent(queryText)}`
+            );
+            return response.json();
+        }
+
+        async function initInteractiveMap() {
+            const mapElement = document.getElementById("mapFrame");
+            const mapStatus = document.getElementById("mapStatus");
+            const indiaFallback = [22.5937, 78.9629];
+            const map = L.map(mapElement, {
+                zoomControl: true,
+                scrollWheelZoom: true
+            }).setView(indiaFallback, 5);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(map);
+
+            try {
+                const results = await searchLocation(exactLocationQuery);
+
+                if (results.length > 0) {
+                    const lat = Number(results[0].lat);
+                    const lon = Number(results[0].lon);
+                    map.setView([lat, lon], 15);
+                    L.marker([lat, lon]).addTo(map).bindPopup(mapSearchText).openPopup();
+                    mapStatus.innerText = `Showing map for ${mapSearchText}`;
+                } else {
+                    mapStatus.innerText = `Map location not found for ${mapSearchText}.`;
+                }
+            } catch (error) {
+                mapStatus.innerText = `Unable to load map for ${mapSearchText} right now.`;
+            }
+
+            setTimeout(() => map.invalidateSize(), 150);
+        }
+
+        initInteractiveMap();
     </script>
 
     <script src="{{ url_for('static', filename='main.js') }}"></script>

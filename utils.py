@@ -1,24 +1,19 @@
 import pickle
 import numpy as np
 
-# ==============================
 # LOAD FILES
-# ==============================
 model = pickle.load(open("model/house_model.pkl", "rb"))
 encoders = pickle.load(open("model/encoders.pkl", "rb"))
 
 locality_mean = pickle.load(open("model/locality_mean.pkl", "rb"))
 city_mean = pickle.load(open("model/city_mean.pkl", "rb"))
 
-# ==============================
 # DEFAULT VALUES (FIXED)
-# ==============================
 DEFAULT_LOCALITY = np.mean(locality_mean)
 DEFAULT_CITY = np.mean(city_mean)
 
-# ==============================
+
 # SAFE ENCODER
-# ==============================
 def safe_encode(le, value):
     try:
         if value in le.classes_:
@@ -28,9 +23,7 @@ def safe_encode(le, value):
     except:
         return 0
 
-# ==============================
 # PREDICT FUNCTION
-# ==============================
 def predict_rent(data):
 
     # Feature Engineering
@@ -65,4 +58,4 @@ def predict_rent(data):
     return round(final_prediction, 2)
 
 
-print("✅ Model loaded successfully")
+print("Model loaded successfully")
