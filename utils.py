@@ -1,17 +1,25 @@
 import pickle
 import numpy as np
+import pandas as pd
+import os
 
-# LOAD FILES
+# LOAD MODEL FILES
 model = pickle.load(open("model/house_model.pkl", "rb"))
 encoders = pickle.load(open("model/encoders.pkl", "rb"))
 
-locality_mean = pickle.load(open("model/locality_mean.pkl", "rb"))
-city_mean = pickle.load(open("model/city_mean.pkl", "rb"))
+# LOAD DATASET (for target encoding instead of pickle)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+data_path = os.path.join(BASE_DIR, "datasets/fullcleaned_house_data.csv")
 
-# DEFAULT VALUES (FIXED)
-DEFAULT_LOCALITY = np.mean(locality_mean)
-DEFAULT_CITY = np.mean(city_mean)
+df = pd.read_csv(data_path)
 
+# CREATE ENCODING DICTIONARIES
+locality_mean = df.groupby("locality")["rent"].mean().to_dict()
+city_mean = df.groupby("city")["rent"].mean().to_dict()
+
+# DEFAULT VALUES (safe fallback)
+DEFAULT_LOCALITY = np.mean(list(locality_mean.values()))
+DEFAULT_CITY = np.mean(list(city_mean.values()))
 
 # SAFE ENCODER
 def safe_encode(le, value):
@@ -51,11 +59,14 @@ def predict_rent(data):
         city_encoded
     ]).reshape(1, -1)
 
-    # Prediction
+    # MODEL PREDICTION
     log_prediction = model.predict(features)[0]
     final_prediction = np.expm1(log_prediction)
 
-    return round(final_prediction, 2)
+    # BHK ADJUSTMENT LOGIC ()
+    bhk_factor = 1 + (0.05 * (data["beds"] - 1))
+    final_prediction = final_prediction * bhk_factor
 
+    return round(final_prediction, 2)
 
 print("Model loaded successfully")
