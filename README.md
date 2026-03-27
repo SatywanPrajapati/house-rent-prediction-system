@@ -144,7 +144,7 @@ house-rent-prediction-system/
 ├── input.png
 └── result.png
 
-```
+---
 
 ##  How It Works
 
