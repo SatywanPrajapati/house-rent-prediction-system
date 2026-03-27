@@ -146,9 +146,6 @@ house-rent-prediction-system/
 
 ```
 
-
----
-
 ##  How It Works
 
 1. User inputs property details  
