@@ -106,6 +106,8 @@ An end-to-end Machine Learning-powered web application that predicts house rent 
 - **Map Visualization:** Leaflet.js, OpenStreetMap  
 - **Deployment:** Render  
 
+---
+
 ##  Project Structure
 
 house-rent-prediction-system/
@@ -141,6 +143,8 @@ house-rent-prediction-system/
 └── assets/
 ├── input.png
 └── result.png
+
+```
 
 
 ---
