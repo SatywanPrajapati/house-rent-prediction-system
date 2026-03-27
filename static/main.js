@@ -8,7 +8,6 @@ const cityLocalityData = document.getElementById("city-locality-data");
 
 let cityLocalityMap = {};
 
-// LOAD CITY-LOCALITY DATA
 if (cityLocalityData) {
     try {
         cityLocalityMap = JSON.parse(cityLocalityData.textContent);
@@ -16,9 +15,6 @@ if (cityLocalityData) {
         console.error("Unable to parse city-locality data:", error);
     }
 }
-
-
-// ERROR HANDLING
 
 function showError(message) {
     if (!formError) return;
@@ -32,24 +28,39 @@ function clearError() {
     formError.hidden = true;
 }
 
-
-// HELPER
-
 function getFieldValue(id) {
     const field = document.getElementById(id);
     return field ? field.value.trim() : "";
 }
 
-
-// LOCALITY POPULATION
-
-function populateLocalities() {
+async function populateLocalities() {
     if (!citySelect || !localitySelect) return;
 
     const selectedCity = citySelect.value;
-    localitySelect.innerHTML = "<option value=''>Select locality</option>";
+    localitySelect.innerHTML = "<option value=''>Select Locality</option>";
+    localitySelect.disabled = !selectedCity;
 
-    (cityLocalityMap[selectedCity] || []).forEach((locality) => {
+    if (!selectedCity) return;
+
+    let localities = cityLocalityMap[selectedCity] || [];
+
+    if (!localities.length) {
+        try {
+            const response = await fetch(
+                `/localities/${encodeURIComponent(selectedCity)}`
+            );
+            const data = await response.json();
+
+            if (response.ok && data.success && Array.isArray(data.localities)) {
+                localities = data.localities;
+                cityLocalityMap[selectedCity] = localities;
+            }
+        } catch (error) {
+            console.error("Unable to load localities:", error);
+        }
+    }
+
+    localities.forEach((locality) => {
         const option = document.createElement("option");
         option.value = locality;
         option.textContent = locality;
@@ -57,18 +68,12 @@ function populateLocalities() {
     });
 }
 
-
-// BUTTON LOADING STATE
-
 function setLoadingState(isLoading) {
     if (!predictButton) return;
 
     predictButton.textContent = isLoading ? "Predicting..." : "Predict Rent";
     predictButton.disabled = isLoading;
 }
-
-
-// MAIN PREDICTION FUNCTION
 
 async function predictRent() {
     clearError();
@@ -114,9 +119,6 @@ async function predictRent() {
     }
 
     try {
-
-        // API CALL
-
         const response = await fetch("/predict", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -128,9 +130,6 @@ async function predictRent() {
         if (!response.ok || !data.success) {
             throw new Error(data.error || "Prediction failed");
         }
-
-
-        // PASS DATA TO RESULT PAGE
 
         const resultParams = new URLSearchParams({
             rent: String(data.rent),
@@ -155,10 +154,11 @@ async function predictRent() {
     }
 }
 
-// EVENTS
-
 if (citySelect) {
-    citySelect.addEventListener("change", populateLocalities);
+    citySelect.addEventListener("change", () => {
+        populateLocalities();
+    });
+    populateLocalities();
 }
 
 if (predictionForm) {

@@ -17,10 +17,7 @@
         <div class="card form-card">
             <!-- Main prediction form -->
             <form id="predictionForm" class="form-page" novalidate>
-                <h2 class="form-title">
-                    <span class="form-title-icon" aria-hidden="true">&#127960;</span>
-                    House Rent Prediction
-                </h2>
+                <h2 class="form-title">Check House Rent</h2>
 
                 <div class="field field-floating">
                     <label for="area">Area (Sqft)</label>
@@ -76,7 +73,9 @@
     {% include 'footer.html' %}
 
     <!-- City-locality mapping used by JavaScript for dynamic locality loading -->
-    <script id="city-locality-data" type="application/json">{{ city_locality_map | tojson }}</script>
+    <script id="city-locality-data" type="application/json">
+        {{ city_locality_map | tojson }}
+    </script>
     <!-- Frontend interaction logic -->
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
