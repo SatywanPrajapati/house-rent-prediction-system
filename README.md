@@ -1,4 +1,4 @@
-# 🏠 House Rent Prediction System
+#  House Rent Prediction System
 
 An end-to-end Machine Learning-powered web application that predicts house rent based on property features such as area, BHK, location, and furnishing.
 
@@ -49,7 +49,7 @@ An end-to-end Machine Learning-powered web application that predicts house rent 
 
 ---
 
-## ⚙️ Feature Engineering
+##  Feature Engineering
 
 - Applied log transformation on area to reduce skewness  
 - Removed derived features that introduced redundancy or noise:
@@ -96,7 +96,7 @@ An end-to-end Machine Learning-powered web application that predicts house rent 
 
 ---  
 
-## 🏗️ Tech Stack
+##  Tech Stack
 
 - **Frontend:** HTML5, CSS3, JavaScript  
 - **Backend:** Flask (Python)  
@@ -173,6 +173,6 @@ house-rent-prediction-system/
 **Satywan Prajapati**  
 🎓 IIT Patna  
 
-- 🔗 LinkedIn: https://www.linkedin.com/in/satywanprajapati/  
-- 💻 GitHub: https://github.com/SatywanPrajapati  
+-  LinkedIn: https://www.linkedin.com/in/satywanprajapati/  
+-  GitHub: https://github.com/SatywanPrajapati  
 
