@@ -173,4 +173,4 @@ house-rent-prediction-system/
 -  LinkedIn: https://www.linkedin.com/in/satywanprajapati/  
 -  GitHub: https://github.com/SatywanPrajapati 
  
--  Thank You
+-  Thank You.
