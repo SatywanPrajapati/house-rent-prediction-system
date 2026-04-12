@@ -5,7 +5,7 @@ from utils import predict_rent
 
 app = Flask(__name__)
 
-# ✅ SAFE PATH (important for deploy)
+# SAFE PATH (important for deploy)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(BASE_DIR, "datasets/fullcleaned_house_data.csv")
 
@@ -16,13 +16,13 @@ df = pd.read_csv(data_path)
 cities = sorted(df["city"].dropna().unique())
 furnishings = sorted(df["furnishing"].dropna().unique())
 
-# CITY → LOCALITY MAP
+# CITY to LOCALITY MAP
 city_locality_map = {
     city: sorted(df[df["city"] == city]["locality"].dropna().unique())
     for city in cities
 }
 
-# 🔥 TARGET ENCODING (IMPORTANT)
+# TARGET ENCODING (IMPORTANT)
 locality_mean = df.groupby("locality")["rent"].mean().to_dict()
 city_mean = df.groupby("city")["rent"].mean().to_dict()
 
@@ -84,7 +84,7 @@ def predict():
                 "error": "Please enter valid numeric values."
             }), 400
 
-        # 🔥 PASS DATA TO UTILS
+        # PASS DATA TO UTILS
         prediction = predict_rent(input_data, locality_mean, city_mean)
         predicted_rent = int(round(prediction))
 
