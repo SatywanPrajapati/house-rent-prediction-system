@@ -144,9 +144,6 @@ house-rent-prediction-system/
 ├── input.png
 └── result.png
 
-```
-
-
 ---
 
 ##  How It Works
@@ -174,5 +171,11 @@ house-rent-prediction-system/
 🎓 IIT Patna  
 
 -  LinkedIn: https://www.linkedin.com/in/satywanprajapati/  
+<<<<<<< HEAD
 -  GitHub: https://github.com/SatywanPrajapati  
 
+=======
+-  GitHub: https://github.com/SatywanPrajapati 
+ 
+-  Thank You.
+>>>>>>> 91aa453a6d62cad290743df76e7b35f9f68eda0d
