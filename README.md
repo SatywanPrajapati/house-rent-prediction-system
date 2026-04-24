@@ -178,4 +178,3 @@ house-rent-prediction-system/
 -  GitHub: https://github.com/SatywanPrajapati 
  
 -  Thank You.
->>>>>>> 91aa453a6d62cad290743df76e7b35f9f68eda0d
