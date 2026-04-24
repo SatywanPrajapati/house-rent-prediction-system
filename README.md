@@ -170,11 +170,8 @@ house-rent-prediction-system/
 **Satywan Prajapati**  
 🎓 IIT Patna  
 
--  LinkedIn: https://www.linkedin.com/in/satywanprajapati/  
-<<<<<<< HEAD
+-  LinkedIn: https://www.linkedin.com/in/satywanprajapati/
+  
 -  GitHub: https://github.com/SatywanPrajapati  
-
-=======
--  GitHub: https://github.com/SatywanPrajapati 
  
 -  Thank You.
